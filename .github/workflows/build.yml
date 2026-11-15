@@ -20,12 +20,13 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Install Flet and Build APK
+      - name: Forge Custom Signed ARM64 APK
         run: |
-          pip install "flet>=0.21.0"
-          flet build apk --yes
+          pip install "flet>=0.21.0" pillow
+          python -c "from PIL import Image; import os; p='assets/icon_raw'; Image.open(p).convert('RGBA').resize((512,512)).save('assets/icon.png') if os.path.exists(p) else None"
+          flet build apk --project "omni56" --product "Zelalem Omni 56" --org "com.zelalem" --split-per-abi --yes
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
-          path: build/apk/*.apk
+          path: build/apk/*arm64-v8a*.apk
