@@ -15,24 +15,26 @@ DB_PATH = os.path.join(tempfile.gettempdir(), "zelalem_omni56_vault.db")
 
 
 def init_db():
-  conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-  conn.execute("""CREATE TABLE IF NOT EXISTS notes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT, body TEXT, ts TEXT
-    )""")
-  conn.execute("""CREATE TABLE IF NOT EXISTS alarms (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        time_str TEXT, label TEXT, active INTEGER
-    )""")
-  conn.commit()
-  conn.close()
+  try:
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn.execute("""CREATE TABLE IF NOT EXISTS notes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT, body TEXT, ts TEXT
+        )""")
+    conn.execute("""CREATE TABLE IF NOT EXISTS alarms (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            time_str TEXT, label TEXT, active INTEGER
+        )""")
+    conn.commit()
+    conn.close()
+  except Exception:
+    pass
 
 
 # ==========================================
 # THE 56 BUILT-IN OFFLINE TOOLS ENGINE
 # ==========================================
 TOOLS_CATALOG = [
-    # Math & Science (1-14)
     ("01. Quadratic Solver (ax²+bx+c)", "Math", "a,b,c (e.g. 1,-5,6)"),
     ("02. Prime Number Checker", "Math", "Enter integer (e.g. 97)"),
     ("03. GCD & LCM Calculator", "Math", "a,b (e.g. 24,36)"),
@@ -47,13 +49,12 @@ TOOLS_CATALOG = [
     ("12. Lens Focal Length (1/f)", "Physics", "u(cm), v(cm)"),
     ("13. pH from [H+] Concentration", "Chem", "H+ molarity (e.g. 0.001)"),
     ("14. Ideal Gas Pressure (PV=nRT)", "Chem", "n(mol), T(K), V(L)"),
-    # Unit Converters (15-28)
     ("15. Celsius ➔ Fahrenheit & Kelvin", "Convert", "Temp in °C (e.g. 25)"),
     ("16. Fahrenheit ➔ Celsius", "Convert", "Temp in °F (e.g. 98.6)"),
     ("17. Kilometers ➔ Miles & Meters", "Convert", "Kilometers (e.g. 10)"),
     ("18. Kilograms ➔ Pounds (lbs)", "Convert", "Kilograms (e.g. 70)"),
     ("19. Pounds ➔ Kilograms", "Convert", "Pounds (e.g. 154)"),
-    ("20.Meters ➔ Feet & Inches", "Convert", "Meters (e.g. 1.78)"),
+    ("20. Meters ➔ Feet & Inches", "Convert", "Meters (e.g. 1.78)"),
     ("21. Liters ➔ Gallons", "Convert", "Liters (e.g. 20)"),
     ("22. Speed: km/h ➔ m/s & mph", "Convert", "Speed in km/h (e.g. 100)"),
     ("23. Area: Hectare ➔ Square Meters", "Convert", "Hectares (e.g. 2.5)"),
@@ -62,7 +63,6 @@ TOOLS_CATALOG = [
     ("26. Energy: Calories ➔ Joules", "Convert", "Calories (e.g. 500)"),
     ("27. Angle: Degrees ➔ Radians", "Convert", "Degrees (e.g. 180)"),
     ("28. Power: Horsepower ➔ Watts", "Convert", "HP (e.g. 150)"),
-    # Finance & Forex (29-36)
     ("29. Forex Risk & Lot Calculator", "Forex", "Balance,Risk%,StopLossPips"),
     ("30. Forex Risk:Reward (1:R)", "Forex", "StopLoss, TakeProfit"),
     ("31. Compound Interest Calculator", "Finance", "Principal,Rate%,Years"),
@@ -71,7 +71,6 @@ TOOLS_CATALOG = [
     ("34. Discount Price Calculator", "Finance", "OriginalPrice, Discount%"),
     ("35. Ethiopian VAT (15%) Splitter", "Finance", "Amount in ETB (e.g. 5000)"),
     ("36. Savings Goal Planner", "Finance", "TargetETB, Months"),
-    # Cyber, Code & Satellite (37-46)
     ("37. Hacker Password Generator", "Cyber", "Length (e.g. 16)"),
     ("38. SHA-256 Hash Encryptor", "Cyber", "Enter any text"),
     ("39. Base64 Encoder", "Cyber", "Enter text to encode"),
@@ -82,7 +81,6 @@ TOOLS_CATALOG = [
     ("44. IP Subnet Host Counter", "Cyber", "CIDR prefix (e.g. 24)"),
     ("45. Satellite Dish Elevation Angle", "Sat", "Lat,Lon,SatLon (e.g. 7.5,35.4,57)"),
     ("46. LNB Skew Angle Calculator", "Sat", "Lat,Lon,SatLon (e.g. 7.5,35.4,7)"),
-    # Fitness, Health & Daily Utilities (47-56)
     ("47. BMI & Body Category", "Fitness", "Weight(kg), Height(cm)"),
     ("48. Daily Calorie (TDEE) Estimator", "Fitness", "Weight(kg),Height(cm),Age"),
     ("49. 1-Rep Max Strength (Calisthenics)", "Fitness", "Weight(kg), Reps"),
@@ -279,14 +277,11 @@ def execute_tool(tool_name, raw_in):
           rom += syb[i]
           n -= val[i]
       return f"Roman Numeral = {rom}"
-    return "እባክህ በቅንፉ ውስጥ በተጻፈው ምሳሌ መሰረት ቁጥሩን አስገባ!"
+    return "Enter valid input format."
   except Exception as e:
-    return f"Input Error: {e}"
+    return f"Error: {e}"
 
 
-# ==========================================
-# MAIN FLET SUPER-APP UI
-# ==========================================
 def main(page: ft.Page):
   init_db()
   page.title = "Zelalem Omni 56"
@@ -294,106 +289,108 @@ def main(page: ft.Page):
   page.bgcolor = "#060911"
   page.padding = 0
 
-  # State for Stopwatch & Live Clock
   sw_running = [False]
   sw_seconds = [0.0]
 
   def notify(msg, col="#00FF88"):
-    page.snack_bar = ft.SnackBar(
-        ft.Text(msg, color="black", weight="bold"), bgcolor=col
-    )
-    page.snack_bar.open = True
-    page.update()
+    try:
+      page.snack_bar = ft.SnackBar(
+          ft.Text(msg, color="black", weight="bold"), bgcolor=col
+      )
+      page.snack_bar.open = True
+      page.update()
+    except Exception:
+      pass
 
-  # ------------------------------------------
-  # TAB 1: SMART ALARM, CLOCK & STOPWATCH
-  # ------------------------------------------
   lbl_live_clock = ft.Text("00:00:00", size=38, weight="bold", color="#00FF88")
   lbl_live_date = ft.Text("Sunday, Nov 15, 2026", size=12, color="#00E5FF")
   lbl_sw = ft.Text("00:00.0", size=34, weight="bold", color="#FFFFFF")
 
   def build_clock_tab():
     tf_alarm_time = ft.TextField(
-        label="Alarm Time (HH:MM e.g. 06:30)",
-        bgcolor="#0D1322",
-        border_radius=12,
-        expand=True,
+        label="Alarm Time (HH:MM)", bgcolor="#0D1322", border_radius=12, expand=True
     )
     tf_alarm_lbl = ft.TextField(
-        label="Label (e.g. Study / Calisthenics)",
-        bgcolor="#0D1322",
-        border_radius=12,
-        expand=True,
+        label="Label (Study/Sport)", bgcolor="#0D1322", border_radius=12, expand=True
     )
     alarm_col = ft.Column(spacing=8)
 
     def load_alarms():
-      alarm_col.controls.clear()
-      conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-      for aid, t_str, lbl, act in conn.execute(
-          "SELECT id, time_str, label, active FROM alarms ORDER BY id DESC"
-      ):
-        alarm_col.controls.append(
-            ft.Container(
-                bgcolor="#0D1322",
-                padding=12,
-                border_radius=14,
-                border=ft.border.all(1, "#00E5FF" if act else "#1E293B"),
-                content=ft.Row(
-                    [
-                        ft.Icon(
-                            "alarm",
-                            color="#00FF88" if act else "#64748B",
-                            size=28,
-                        ),
-                        ft.Column(
-                            [
-                                ft.Text(
-                                    t_str,
-                                    size=20,
-                                    weight="bold",
-                                    color="white",
-                                ),
-                                ft.Text(lbl, size=12, color="#94A3B8"),
-                            ],
-                            expand=True,
-                            spacing=2,
-                        ),
-                        ft.IconButton(
-                            icon="delete_outline",
-                            icon_color="#F43F5E",
-                            on_click=lambda e, x=aid: del_alarm(x),
-                        ),
-                    ],
-                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                ),
-            )
-        )
-      conn.close()
-      page.update()
+      try:
+        alarm_col.controls.clear()
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+        for aid, t_str, lbl, act in conn.execute(
+            "SELECT id, time_str, label, active FROM alarms ORDER BY id DESC"
+        ):
+          alarm_col.controls.append(
+              ft.Container(
+                  bgcolor="#0D1322",
+                  padding=12,
+                  border_radius=14,
+                  border=ft.border.all(1, "#00E5FF" if act else "#1E293B"),
+                  content=ft.Row(
+                      [
+                          ft.Icon(
+                              "alarm",
+                              color="#00FF88" if act else "#64748B",
+                              size=28,
+                          ),
+                          ft.Column(
+                              [
+                                  ft.Text(
+                                      t_str,
+                                      size=20,
+                                      weight="bold",
+                                      color="white",
+                                  ),
+                                  ft.Text(lbl, size=12, color="#94A3B8"),
+                              ],
+                              expand=True,
+                              spacing=2,
+                          ),
+                          ft.IconButton(
+                              icon="delete_outline",
+                              icon_color="#F43F5E",
+                              on_click=lambda e, x=aid: del_alarm(x),
+                          ),
+                      ],
+                      alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                  ),
+              )
+          )
+        conn.close()
+        page.update()
+      except Exception:
+        pass
 
     def add_alarm(e):
       if not tf_alarm_time.value:
-        notify("ሰዓት አስገባ (ምሳሌ 06:30)!", "#F43F5E")
+        notify("ሰዓት አስገባ!", "#F43F5E")
         return
-      conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-      conn.execute(
-          "INSERT INTO alarms (time_str, label, active) VALUES (?,?,1)",
-          (tf_alarm_time.value.strip(), tf_alarm_lbl.value or "Alarm"),
-      )
-      conn.commit()
-      conn.close()
-      tf_alarm_time.value = ""
-      tf_alarm_lbl.value = ""
-      notify("⏰ Alarm ተሞልቷል!")
-      load_alarms()
+      try:
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+        conn.execute(
+            "INSERT INTO alarms (time_str, label, active) VALUES (?,?,1)",
+            (tf_alarm_time.value.strip(), tf_alarm_lbl.value or "Alarm"),
+        )
+        conn.commit()
+        conn.close()
+        tf_alarm_time.value = ""
+        tf_alarm_lbl.value = ""
+        notify("⏰ Alarm ተቀምጧል!")
+        load_alarms()
+      except Exception:
+        pass
 
     def del_alarm(aid):
-      conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-      conn.execute("DELETE FROM alarms WHERE id=?", (aid,))
-      conn.commit()
-      conn.close()
-      load_alarms()
+      try:
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+        conn.execute("DELETE FROM alarms WHERE id=?", (aid,))
+        conn.commit()
+        conn.close()
+        load_alarms()
+      except Exception:
+        pass
 
     def toggle_sw(e):
       sw_running[0] = not sw_running[0]
@@ -410,7 +407,6 @@ def main(page: ft.Page):
         padding=16,
         content=ft.Column(
             [
-                # Digital Cyber Clock Card
                 ft.Container(
                     padding=20,
                     border_radius=20,
@@ -436,7 +432,6 @@ def main(page: ft.Page):
                         spacing=4,
                     ),
                 ),
-                # Stopwatch Card
                 ft.Container(
                     bgcolor="#0D1322",
                     padding=16,
@@ -445,7 +440,7 @@ def main(page: ft.Page):
                     content=ft.Column(
                         [
                             ft.Text(
-                                "⏱ PRECISION STOPWATCH (CALISTHENICS / STUDY)",
+                                "⏱ STOPWATCH",
                                 size=11,
                                 color="#00FF88",
                                 weight="bold",
@@ -454,7 +449,7 @@ def main(page: ft.Page):
                             ft.Row(
                                 [
                                     ft.ElevatedButton(
-                                        "▶ START / PAUSE",
+                                        "▶ START/PAUSE",
                                         bgcolor="#00FF88",
                                         color="black",
                                         on_click=toggle_sw,
@@ -473,14 +468,11 @@ def main(page: ft.Page):
                     ),
                 ),
                 ft.Text(
-                    "⏰ SMART ALARM MANAGER",
-                    size=13,
-                    weight="bold",
-                    color="#00E5FF",
+                    "⏰ ALARMS", size=13, weight="bold", color="#00E5FF"
                 ),
                 ft.Row([tf_alarm_time, tf_alarm_lbl]),
                 ft.ElevatedButton(
-                    "➕ SET NEW ALARM",
+                    "➕ SET ALARM",
                     bgcolor="#00E5FF",
                     color="black",
                     height=44,
@@ -494,9 +486,6 @@ def main(page: ft.Page):
         ),
     )
 
-  # ------------------------------------------
-  # TAB 2: PRO SCIENTIFIC CALCULATOR
-  # ------------------------------------------
   def build_calc_tab():
     expr_txt = ft.Text("", size=16, color="#94A3B8")
     res_txt = ft.Text("0", size=36, weight="bold", color="#00FF88")
@@ -518,8 +507,16 @@ def main(page: ft.Page):
               "pi": math.pi,
               "e": math.e,
           }
-          ans = eval(expr_txt.value.replace("×", "*").replace("÷", "/").replace("^", "**"), {"__builtins__": {}}, safe_env)
-          res_txt.value = f"{ans:.6g}" if isinstance(ans, float) else str(ans)
+          ans = eval(
+              expr_txt.value.replace("×", "*")
+              .replace("÷", "/")
+              .replace("^", "**"),
+              {"__builtins__": {}},
+              safe_env,
+          )
+          res_txt.value = (
+              f"{ans:.6g}" if isinstance(ans, float) else str(ans)
+          )
         except Exception:
           res_txt.value = "Error"
       elif k in ["sin", "cos", "tan", "sqrt", "log"]:
@@ -580,12 +577,9 @@ def main(page: ft.Page):
         ),
     )
 
-  # ------------------------------------------
-  # TAB 3: 56-IN-1 OMNI TOOLS HUB
-  # ------------------------------------------
   def build_56_tools_tab():
     dd_tool = ft.Dropdown(
-        label="🛠️ ከ56ቱ መሳሪያዎች አንዱን ምረጥ (Select Tool 1 - 56)",
+        label="🛠️ Select Tool (1 - 56)",
         bgcolor="#0D1322",
         border_radius=12,
         options=[ft.dropdown.Option(t[0]) for t in TOOLS_CATALOG],
@@ -597,20 +591,16 @@ def main(page: ft.Page):
         border_radius=12,
         value="1,-5,6",
     )
-    lbl_result = ft.Text(
-        "ውጤቱ እዚህ ይታያል...", size=18, weight="bold", color="#00FF88"
-    )
+    lbl_result = ft.Text("Result...", size=18, weight="bold", color="#00FF88")
     search_tf = ft.TextField(
-        label="🔍 ከ56ቱ መሳሪያዎች ውስጥ በስም ፈልግ (Search 56 Tools)...",
-        bgcolor="#0D1322",
-        border_radius=12,
+        label="🔍 Search 56 Tools...", bgcolor="#0D1322", border_radius=12
     )
     cards_col = ft.Column(spacing=8)
 
     def on_tool_select(e=None):
       for name, cat, hint in TOOLS_CATALOG:
         if name == dd_tool.value:
-          tf_input.label = f"ግብዓት ({cat}): {hint}"
+          tf_input.label = f"Input ({cat}): {hint}"
           break
       page.update()
 
@@ -625,7 +615,7 @@ def main(page: ft.Page):
       dd_tool.value = t_name
       tf_input.label = f"Input: {hint}"
       page.update()
-      notify(f"ተመርጧል: {t_name}", "#00E5FF")
+      notify(f"Selected: {t_name}", "#00E5FF")
 
     def render_catalog(e=None):
       cards_col.controls.clear()
@@ -691,7 +681,7 @@ def main(page: ft.Page):
                     content=ft.Column(
                         [
                             ft.Text(
-                                "⚡ ACTIVE OMNI-TOOL EXECUTOR",
+                                "⚡ OMNI-TOOL EXECUTOR",
                                 size=11,
                                 weight="bold",
                                 color="#00E5FF",
@@ -699,7 +689,7 @@ def main(page: ft.Page):
                             dd_tool,
                             tf_input,
                             ft.ElevatedButton(
-                                "🚀 አስላ / ስራ (EXECUTE TOOL)",
+                                "🚀 EXECUTE TOOL",
                                 bgcolor="#00FF88",
                                 color="black",
                                 height=44,
@@ -713,7 +703,7 @@ def main(page: ft.Page):
                 ),
                 search_tf,
                 ft.Text(
-                    "📋 ሙሉ የ56ቱ መሳሪያዎች ዝርዝር (ነካ አድርገህ ምረጥ):",
+                    "📋 56 Tools Catalog:",
                     size=12,
                     color="#94A3B8",
                     weight="bold",
@@ -726,15 +716,12 @@ def main(page: ft.Page):
         ),
     )
 
-  # ------------------------------------------
-  # TAB 4: ENCRYPTED OFFLINE SQLITE VAULT
-  # ------------------------------------------
   def build_vault_tab():
     tf_title = ft.TextField(
-        label="Note / Secret Title", bgcolor="#0D1322", border_radius=12
+        label="Note Title", bgcolor="#0D1322", border_radius=12
     )
     tf_body = ft.TextField(
-        label="Details / Password / Code...",
+        label="Secret Details...",
         bgcolor="#0D1322",
         border_radius=12,
         multiline=True,
@@ -743,66 +730,75 @@ def main(page: ft.Page):
     notes_col = ft.Column(spacing=8)
 
     def load_notes():
-      notes_col.controls.clear()
-      conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-      for nid, t, b, ts in conn.execute(
-          "SELECT id, title, body, ts FROM notes ORDER BY id DESC"
-      ):
-        notes_col.controls.append(
-            ft.Container(
-                bgcolor="#0D1322",
-                padding=14,
-                border_radius=14,
-                border=ft.border.all(1, "#1E293B"),
-                content=ft.Row(
-                    [
-                        ft.Column(
-                            [
-                                ft.Text(
-                                    t, size=15, weight="bold", color="#00FF88"
-                                ),
-                                ft.Text(b, size=13, color="white"),
-                                ft.Text(ts, size=10, color="#64748B"),
-                            ],
-                            expand=True,
-                            spacing=3,
-                        ),
-                        ft.IconButton(
-                            icon="delete_outline",
-                            icon_color="#F43F5E",
-                            on_click=lambda e, x=nid: del_note(x),
-                        ),
-                    ],
-                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                ),
-            )
-        )
-      conn.close()
-      page.update()
+      try:
+        notes_col.controls.clear()
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+        for nid, t, b, ts in conn.execute(
+            "SELECT id, title, body, ts FROM notes ORDER BY id DESC"
+        ):
+          notes_col.controls.append(
+              ft.Container(
+                  bgcolor="#0D1322",
+                  padding=14,
+                  border_radius=14,
+                  border=ft.border.all(1, "#1E293B"),
+                  content=ft.Row(
+                      [
+                          ft.Column(
+                              [
+                                  ft.Text(
+                                      t, size=15, weight="bold", color="#00FF88"
+                                  ),
+                                  ft.Text(b, size=13, color="white"),
+                                  ft.Text(ts, size=10, color="#64748B"),
+                              ],
+                              expand=True,
+                              spacing=3,
+                          ),
+                          ft.IconButton(
+                              icon="delete_outline",
+                              icon_color="#F43F5E",
+                              on_click=lambda e, x=nid: del_note(x),
+                          ),
+                      ],
+                      alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                  ),
+              )
+          )
+        conn.close()
+        page.update()
+      except Exception:
+        pass
 
     def save_note(e):
       if not tf_title.value:
-        notify("ርዕስ አስገባ!", "#F43F5E")
+        notify("Enter title!", "#F43F5E")
         return
-      conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-      now_s = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-      conn.execute(
-          "INSERT INTO notes (title, body, ts) VALUES (?,?,?)",
-          (tf_title.value.strip(), tf_body.value or "", now_s),
-      )
-      conn.commit()
-      conn.close()
-      tf_title.value = ""
-      tf_body.value = ""
-      notify("🔐 ሚስጥራዊ መረጃው Offline ተቀምጧል!")
-      load_notes()
+      try:
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+        now_s = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+        conn.execute(
+            "INSERT INTO notes (title, body, ts) VALUES (?,?,?)",
+            (tf_title.value.strip(), tf_body.value or "", now_s),
+        )
+        conn.commit()
+        conn.close()
+        tf_title.value = ""
+        tf_body.value = ""
+        notify("🔐 Saved to Offline Vault!")
+        load_notes()
+      except Exception:
+        pass
 
     def del_note(nid):
-      conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-      conn.execute("DELETE FROM notes WHERE id=?", (nid,))
-      conn.commit()
-      conn.close()
-      load_notes()
+      try:
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+        conn.execute("DELETE FROM notes WHERE id=?", (nid,))
+        conn.commit()
+        conn.close()
+        load_notes()
+      except Exception:
+        pass
 
     load_notes()
     return ft.Container(
@@ -810,7 +806,7 @@ def main(page: ft.Page):
         content=ft.Column(
             [
                 ft.Text(
-                    "🔐 OFFLINE SQLITE VAULT (ያለ ኢንተርኔት የሚሰራ)",
+                    "🔐 OFFLINE SQLITE VAULT",
                     size=14,
                     weight="bold",
                     color="#00FF88",
@@ -818,7 +814,7 @@ def main(page: ft.Page):
                 tf_title,
                 tf_body,
                 ft.ElevatedButton(
-                    "💾 SAVE TO OFFLINE DATABASE",
+                    "💾 SAVE NOTE",
                     bgcolor="#00FF88",
                     color="black",
                     height=44,
@@ -833,12 +829,11 @@ def main(page: ft.Page):
         ),
     )
 
-  # Background Thread for Live Clock & Stopwatch
   def clock_worker():
     while True:
       now = datetime.datetime.now()
       lbl_live_clock.value = now.strftime("%I:%M:%S %p")
-      lbl_live_date.value = now.strftime("%A, %b %d, %Y  |  Zelalem Omni OS")
+      lbl_live_date.value = now.strftime("%A, %b %d, %Y")
       if sw_running[0]:
         sw_seconds[0] += 0.2
         mins = int(sw_seconds[0]) // 60
@@ -869,16 +864,13 @@ def main(page: ft.Page):
       selected_index=0,
       on_change=on_nav,
       destinations=[
-          ft.NavigationDestination(icon="alarm", label="Alarm/Clock"),
-          ft.NavigationDestination(icon="calculate", label="Sci-Calc"),
+          ft.NavigationDestination(icon="alarm", label="Clock"),
+          ft.NavigationDestination(icon="calculate", label="Calc"),
           ft.NavigationDestination(icon="grid_view", label="56 Tools"),
-          ft.NavigationDestination(icon="lock", label="SQLite Vault"),
+          ft.NavigationDestination(icon="lock", label="Vault"),
       ],
   )
 
   page.add(body, nav)
 
-
-ft.app(target=main)
-
-# NEXUS_BUILD: 1794753607
+# NEXUS_BUILD: 1794838272
