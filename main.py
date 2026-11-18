@@ -49,13 +49,6 @@ def get_align(pos="center"):
   return None
 
 
-def make_gradient(colors):
-  try:
-    return ft.LinearGradient(colors=colors)
-  except Exception:
-    return None
-
-
 SCROLL_AUTO = (
     getattr(ft.ScrollMode, "AUTO", "auto")
     if hasattr(ft, "ScrollMode")
@@ -466,12 +459,12 @@ def execute_tool(tool_name, raw_in):
 
 
 # =========================================================
-# 4. MAIN SUPER-APP UI & BRAIN (NEON GLASSMORPHISM)
+# 4. MAIN SUPER-APP UI & BRAIN (100% ANDROID FLET 1.0 SAFE)
 # =========================================================
 def main(page: ft.Page):
   try:
     init_db()
-    page.title = "Zelalem Omni Masterpiece"
+    page.title = "Z-OS Omni"
     page.padding = 0
     page.bgcolor = "#030712"
     try:
@@ -482,12 +475,12 @@ def main(page: ft.Page):
       pass
 
     # App Reactive State
-    bright_mode = [False]  # False = Deep Cyber Neon, True = Ultra-Bright Daylight
+    bright_mode = [False]
     active_tab = [0]
     sw_running = [False]
     sw_seconds = [0.0]
     pomo_running = [False]
-    pomo_seconds = [1500]  # 25 mins
+    pomo_seconds = [1500]
     selected_cat = ["ALL"]
     selected_tool_idx = [0]
     calc_history = []
@@ -523,7 +516,6 @@ def main(page: ft.Page):
       except Exception:
         pass
 
-    # Custom Crash-Proof Neon Button
     def neon_btn(
         label,
         on_click,
@@ -545,9 +537,8 @@ def main(page: ft.Page):
           content=ft.Text(label, size=13, weight="bold", color=fg),
       )
 
-    # Top Notification & Status Bar (Replaces deprecated SnackBar)
     status_txt = ft.Text(
-        "⚡ ZELALEM OMNI OS READY • 60 TOOLS ACTIVE",
+        "⚡ Z-OS OMNI READY • 60 TOOLS ACTIVE",
         size=11,
         weight="bold",
         color="#00FF88",
@@ -582,10 +573,9 @@ def main(page: ft.Page):
       status_txt.color = col
       safe_update()
 
-    # Live Clock & Timer Labels
     lbl_live_clock = ft.Text("00:00:00", size=34, weight="bold", color="#00FF88")
     lbl_live_date = ft.Text(
-        "Tuesday, Nov 17, 2026 • Gambela Node", size=11, color="#00E5FF"
+        "Wednesday, Nov 18, 2026 • System Online", size=11, color="#00E5FF"
     )
     lbl_sw = ft.Text("00:00.0", size=30, weight="bold", color="#FFFFFF")
     lbl_pomo = ft.Text("25:00", size=30, weight="bold", color="#00E5FF")
@@ -716,7 +706,6 @@ def main(page: ft.Page):
           padding=14,
           content=ft.Column(
               [
-                  # Hero Atomic Clock Card
                   ft.Container(
                       bgcolor=th["card_alt"],
                       padding=18,
@@ -738,7 +727,6 @@ def main(page: ft.Page):
                           spacing=4,
                       ),
                   ),
-                  # Dual Timers: Stopwatch & Pomodoro
                   ft.Row(
                       [
                           ft.Container(
@@ -824,7 +812,6 @@ def main(page: ft.Page):
                       ],
                       spacing=10,
                   ),
-                  # Smart Alarm Section
                   ft.Text(
                       "⏰ SMART ALARM SCHEDULE",
                       size=12,
@@ -1121,7 +1108,6 @@ def main(page: ft.Page):
           padding=14,
           content=ft.Column(
               [
-                  # Active Executor Box
                   ft.Container(
                       bgcolor=th["card_alt"],
                       padding=14,
@@ -1533,10 +1519,13 @@ def main(page: ft.Page):
     ]
 
     def switch_tab(idx):
-      active_tab[0] = idx
-      render_nav()
-      body_container.content = tab_defs[idx][2]()
-      safe_update()
+      try:
+        active_tab[0] = idx
+        render_nav()
+        body_container.content = tab_defs[idx][2]()
+        safe_update()
+      except Exception as tab_err:
+        notify(f"Tab error: {tab_err}", "#F43F5E")
 
     def toggle_brightness():
       bright_mode[0] = not bright_mode[0]
@@ -1584,17 +1573,15 @@ def main(page: ft.Page):
             )
         )
 
-    # Mount Main Layout with Safe Top Padding for Android Status Bar
     render_nav()
     body_container.content = build_hub_tab()
 
+    # FIXED: Plain integer padding=10 (No ft.padding.symmetric call!)
     main_layout = ft.Column(
         [
-            ft.Container(height=24),  # Android Status Bar Safe Area
+            ft.Container(height=24),
             ft.Container(
-                padding=ft.padding.symmetric(horizontal=12)
-                if hasattr(ft, "padding")
-                else 8,
+                padding=10,
                 content=status_box,
             ),
             body_container,
@@ -1610,7 +1597,6 @@ def main(page: ft.Page):
 
     page.add(main_layout)
 
-    # Background Clock, Stopwatch & Pomodoro Worker Thread
     def clock_worker():
       while True:
         time.sleep(0.2)
@@ -1635,7 +1621,6 @@ def main(page: ft.Page):
     threading.Thread(target=clock_worker, daemon=True).start()
 
   except Exception as fatal_e:
-    # Fail-safe diagnostic screen so the app NEVER closes on Android
     page.add(
         ft.Container(
             padding=24,
@@ -1664,4 +1649,4 @@ if __name__ == "__main__":
   elif hasattr(ft, "app"):
     ft.app(target=main)
 
-# NEXUS_BUILD: 1795004658
+# NEXUS_BUILD: 1795014933
