@@ -24,7 +24,7 @@ jobs:
         run: |
           pip install "flet>=0.21.0" pillow
           python -c "from PIL import Image; import os; p='assets/icon_raw'; Image.open(p).convert('RGBA').resize((512,512)).save('assets/icon.png') if os.path.exists(p) else None"
-          flet build apk --project "omni56" --product "A-core" --org "com.zelalem" --split-per-abi --yes
+          flet build apk --project "omni56" --product "A-calc" --org "com.zelalem" --split-per-abi --yes
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
